@@ -556,7 +556,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-muted-50 to-muted-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-fixed transition-colors duration-300 bg-gradient-to-br from-gray-50 via-gray-200 to-gray-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
       {/* Responsive Navbar Header */}
       <header className="w-full bg-white dark:bg-gray-900 shadow-soft border-b border-muted-200 dark:border-gray-800">
         <nav className="container mx-auto max-w-4xl px-4 py-4 flex flex-row items-center justify-between">
@@ -967,17 +967,16 @@ function App() {
 
         {state === "toBeDownloaded" && (
           <div className="card text-center py-12 px-4 shadow-xl border border-green-100 dark:border-green-900/30 bg-gradient-to-b from-white to-green-50/50 dark:from-gray-800 dark:to-gray-800/80 animate-fade-up">
-            <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mb-6 shadow-sm">
-              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            </div>
-
+            <img
+              src="/Done.webp"
+              alt="Done"
+              className="mx-auto w-32 h-32 sm:w-40 sm:h-40 object-contain mb-2 drop-shadow-xl"
+            />
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               Done! Your PDF is ready
             </h3>
             <p className="text-muted-600 dark:text-muted-300 mb-8 max-w-md mx-auto">
-              Your file has been successfully processed. Click the button below to download it securely to your device.
+              Click the button below to download it.
             </p>
 
             <div className="flex flex-col items-center justify-center mb-10 space-y-4">
