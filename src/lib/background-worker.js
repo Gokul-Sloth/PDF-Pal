@@ -509,7 +509,6 @@ function _GSSplitPDF(dataStruct, responseCallback) {
   }
 }
 
-
 self.addEventListener('message', function({data: e}) {
   console.log("message", e)
   // e contains the message sent to the worker.
