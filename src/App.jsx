@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { PDFDocument } from "pdf-lib";
 import { _GSPS2PDF } from "./lib/worker-init.js";
 import RightButtonBar from './components/RightButtonBar.jsx';
 
@@ -43,6 +44,7 @@ function App() {
   const [customCommand, setCustomCommand] = useState("");
   const [useCustomCommand, setUseCustomCommand] = useState(false);
   const [splitRange, setSplitRange] = useState({ startPage: "", endPage: "" });
+  const [maxPages, setMaxPages] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
   const [showTerminalOutput, setShowTerminalOutput] = useState(false);
   const [showProgressBar, setShowProgressBar] = useState(false);
@@ -175,7 +177,7 @@ function App() {
     }
   }
 
-  const changeHandler = (event) => {
+  const changeHandler = async (event) => {
     const selectedFiles = Array.from(event.target.files);
     if (selectedFiles.length === 0) return;
 
@@ -198,7 +200,19 @@ function App() {
       fileObjects.slice(1).forEach(file => {
         window.URL.revokeObjectURL(file.url);
       });
-      setFiles(fileObjects.slice(0, 1)); // Only take the first file for compress/split
+      
+      const primaryFile = fileObjects[0];
+      setFiles([primaryFile]);
+      
+      // Calculate max pages for the selected file using pdf-lib
+      try {
+        const arrayBuffer = await primaryFile.file.arrayBuffer();
+        const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+        setMaxPages(pdfDoc.getPageCount());
+      } catch (err) {
+        console.error("Failed to parse PDF pages:", err);
+        setMaxPages(0);
+      }
     }
     setState("selected");
 
@@ -226,6 +240,7 @@ function App() {
       window.URL.revokeObjectURL(file.url);
     });
     setFiles([]);
+    setMaxPages(0);
     setState("init");
   };
 
@@ -253,6 +268,10 @@ function App() {
       const endPage = parseInt(splitRange.endPage, 10);
       if (isNaN(startPage) || isNaN(endPage) || startPage < 1 || endPage < startPage) {
         alert('Please enter valid page numbers. End page must be greater than or equal to start page.');
+        return;
+      }
+      if (maxPages > 0 && (startPage > maxPages || endPage > maxPages)) {
+        alert(`Page numbers cannot exceed the total number of pages in the PDF (${maxPages}).`);
         return;
       }
     }
@@ -287,6 +306,7 @@ function App() {
     setDownloadLinks([]);
     setState("init");
     setSplitRange({ startPage: "", endPage: "" });
+    setMaxPages(0);
     setErrorMessage("");
     setTerminalData(""); // Clear terminal output
     setProgressInfo({ current: 0, total: 0, currentPage: 0 }); // Reset progress
@@ -327,22 +347,21 @@ function App() {
           id="files"
           className="hidden"
         />
-        <div className="text-center">
-          <label
-            htmlFor="files"
-            className="btn-primary cursor-pointer text-lg px-8 py-4 rounded-xl"
-          >
-            {files.length === 0
-              ? `Choose PDF file${multiple ? 's' : ''} to ${activeTab}`
-              : `${files.length} file${files.length > 1 ? 's' : ''} selected`
-            }
-          </label>
-        </div>
+        {files.length === 0 && (
+          <div className="text-center">
+            <label
+              htmlFor="files"
+              className="btn-primary cursor-pointer text-lg px-8 py-4 rounded-xl"
+            >
+              Choose PDF file{multiple ? "s" : ""} to {activeTab}
+            </label>
+          </div>
+        )}
 
         {files.length > 0 && (
           <div className="card">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
-              <span className="text-sm font-medium text-muted-600 dark:text-muted-400">
+              <span className="text-lg font-bold text-muted-600 dark:text-muted-400">
                 {files.length} file{files.length > 1 ? 's' : ''} selected
               </span>
               <button
@@ -365,11 +384,13 @@ function App() {
                   </div>
                   <button
                     type="button"
-                    className="ml-4 w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200 hover:scale-110"
+                    className="ml-4 p-2 text-muted-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50"
                     onClick={() => removeFile(index)}
                     title="Remove file"
                   >
-                    ×
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
                   </button>
                 </div>
               ))}
@@ -431,8 +452,13 @@ function App() {
 
             {activeTab === 'split' && (
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-900 dark:text-white">
-                  Page Range:
+                <label className="block text-sm font-medium text-gray-900 dark:text-white flex justify-between items-center">
+                  <span>Page Range:</span>
+                  {maxPages > 0 && (
+                    <span className="text-xs text-muted-500 dark:text-muted-400 bg-muted-100 dark:bg-gray-800 px-2 py-1 rounded-md">
+                      Max Pages: {maxPages}
+                    </span>
+                  )}
                 </label>
                 <div className="flex items-center gap-4">
                   <input
@@ -441,6 +467,7 @@ function App() {
                     value={splitRange.startPage}
                     onChange={(e) => setSplitRange(prev => ({ ...prev, startPage: e.target.value }))}
                     min="1"
+                    max={maxPages > 0 ? maxPages : undefined}
                     className="input flex-1"
                   />
                   <span className="text-muted-600 dark:text-muted-400 font-medium">to</span>
@@ -450,6 +477,7 @@ function App() {
                     value={splitRange.endPage}
                     onChange={(e) => setSplitRange(prev => ({ ...prev, endPage: e.target.value }))}
                     min="1"
+                    max={maxPages > 0 ? maxPages : undefined}
                     className="input flex-1"
                   />
                 </div>
@@ -808,25 +836,38 @@ function App() {
         )}
 
         {state === "toBeDownloaded" && (
-          <div className="space-y-6">
-            {downloadLinks.map((link, index) => (
-              <div key={index} className="text-center">
-                <a
-                  href={link.url}
-                  download={link.filename}
-                  className="btn-success text-lg px-8 py-4 inline-block rounded-xl"
-                >
-                  Download {link.filename}
-                </a>
-              </div>
+          <div className="card animate-fade-up" style={{ textAlign: 'center' }}>
+            <div className="state-success-icon" style={{ marginBottom: '1rem' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 0.25rem' }}>
+              Done! Your PDF is ready
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0 0 1.5rem' }}>
+              Click below to download your processed file
+            </p>
+
+            {downloadLinks.map((link, i) => (
+              <a key={i} href={link.url} download={link.filename}
+                className="btn btn-success btn-lg"
+                style={{ display: 'inline-flex', textDecoration: 'none', marginBottom: '1.25rem' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                {link.filename}
+              </a>
             ))}
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button onClick={processAgain} className="btn-secondary text-lg px-8 py-4 rounded-xl">
-                Process Again
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button onClick={processAgain} className="btn btn-secondary">
+                Process again
               </button>
-              <button onClick={resetForm} className="btn-primary text-lg px-8 py-4 rounded-xl">
-                Choose New Files
+              <button onClick={resetForm} className="btn btn-primary">
+                New files
               </button>
             </div>
           </div>
