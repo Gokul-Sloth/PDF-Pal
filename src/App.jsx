@@ -55,6 +55,8 @@ function App() {
   const [terminalData, setTerminalData] = useState("");
   const [progressInfo, setProgressInfo] = useState({ current: 0, total: 0, currentPage: 0 });
   const terminalRef = useRef(null);
+  const dragItem = useRef(null);
+  const dragOverItem = useRef(null);
 
   // Simplified advanced PDF settings
   const [advancedSettings, setAdvancedSettings] = useState({
@@ -418,6 +420,51 @@ function App() {
     }
   };
 
+  const handleDragStart = (e, position) => {
+    dragItem.current = position;
+  };
+
+  const handleDragEnter = (e, position) => {
+    dragOverItem.current = position;
+  };
+
+  const handleDragEnd = () => {
+    const fromIndex = dragItem.current;
+    const toIndex = dragOverItem.current;
+
+    if (fromIndex !== null && toIndex !== null && fromIndex !== toIndex) {
+      setFiles(prevFiles => {
+        const newFiles = [...prevFiles];
+        const draggedItemContent = newFiles[fromIndex];
+        newFiles.splice(fromIndex, 1);
+        newFiles.splice(toIndex, 0, draggedItemContent);
+        return newFiles;
+      });
+    }
+    
+    // Reset refs safely after queueing the update
+    dragItem.current = null;
+    dragOverItem.current = null;
+  };
+
+  const moveFileUp = (index) => {
+    if (index === 0) return;
+    setFiles(prevFiles => {
+      const newFiles = [...prevFiles];
+      [newFiles[index - 1], newFiles[index]] = [newFiles[index], newFiles[index - 1]];
+      return newFiles;
+    });
+  };
+
+  const moveFileDown = (index) => {
+    if (index === files.length - 1) return;
+    setFiles(prevFiles => {
+      const newFiles = [...prevFiles];
+      [newFiles[index + 1], newFiles[index]] = [newFiles[index], newFiles[index + 1]];
+      return newFiles;
+    });
+  };
+
   const clearAllFiles = () => {
     // Clean up blob URLs
     files.forEach(file => {
@@ -761,12 +808,47 @@ function App() {
 
               <div className="space-y-3">
                 {files.map((file, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-muted-50 dark:bg-gray-700 border border-muted-200 dark:border-gray-600 rounded-xl">
-                    <div className="flex-1 min-w-0">
+                  <div 
+                    key={index} 
+                    draggable={activeTab === 'merge'}
+                    onDragStart={(e) => activeTab === 'merge' && handleDragStart(e, index)}
+                    onDragEnter={(e) => activeTab === 'merge' && handleDragEnter(e, index)}
+                    onDragEnd={activeTab === 'merge' ? handleDragEnd : undefined}
+                    onDragOver={(e) => e.preventDefault()}
+                    className={`flex items-center justify-between p-4 bg-muted-50 dark:bg-gray-700 border border-muted-200 dark:border-gray-600 rounded-xl ${activeTab === 'merge' ? 'cursor-grab active:cursor-grabbing hover:border-primary-400 dark:hover:border-primary-500 hover:shadow-md transition-all' : ''}`}
+                  >
+                    <div className="flex-1 min-w-0 flex items-center gap-3">
+                      {activeTab === 'merge' && (
+                        <div className="text-muted-400 shrink-0">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" /></svg>
+                        </div>
+                      )}
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                         {file.filename}
                       </p>
                     </div>
+                    {activeTab === 'merge' && files.length > 1 && (
+                      <div className="flex flex-col items-center gap-1 ml-3 px-2 border-l border-muted-200 dark:border-gray-600">
+                        <button
+                          type="button"
+                          disabled={index === 0}
+                          className="p-1 px-2 text-muted-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded disabled:opacity-30 disabled:hover:text-transparent disabled:hover:bg-transparent transition-all"
+                          onClick={() => moveFileUp(index)}
+                          title="Move file up"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 15l7-7 7 7" /></svg>
+                        </button>
+                        <button
+                          type="button"
+                          disabled={index === files.length - 1}
+                          className="p-1 px-2 text-muted-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded disabled:opacity-30 disabled:hover:text-transparent disabled:hover:bg-transparent transition-all"
+                          onClick={() => moveFileDown(index)}
+                          title="Move file down"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" /></svg>
+                        </button>
+                      </div>
+                    )}
                     <button
                       type="button"
                       className="ml-4 p-2 text-muted-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50"
