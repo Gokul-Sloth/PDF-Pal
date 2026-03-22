@@ -1,39 +1,24 @@
 #!/bin/bash
-
 # Exit on error
 set -e
 
-# Create a temporary directory for the deployment
-TEMP_DIR="dist"
-
-# Build the project with Vite into the temporary directory
-echo "Building the project with Vite into the temporary directory..."
+# Build the project with Vite
+echo "Building the project..."
 npm run build
 
-# Navigate to the temporary directory
-echo "$TEMP_DIR"
-cd "$TEMP_DIR"
+# Navigate into the build output directory
+cd dist
 
-# Initialize a new git repository
-echo "Initializing a new Git repository..."
+# Initialize a new git repository for the built files
+echo "Initializing deployment repository..."
 git init
-
-# Add the remote origin (replace with your actual remote URL)
-REMOTE_URL=git@github.com:your-username/local-pdf-tools.git
-# git remote add origin "$REMOTE_URL"
-
-# Add all build files to git
 git add -A
+git commit -m "Deploy to gh-pages"
 
-# Commit the changes
-git commit -m "Deploy build output to gh-pages"
+# Push to the gh-pages branch
+echo "Pushing built files to GitHub Pages..."
+git push -f https://github.com/Gokul-Sloth/PDF-Pal.git master:gh-pages
 
-# Force push to gh-pages branch
-echo "Force pushing to gh-pages branch..."
-git push --force origin master:gh-pages
-
-# Cleanup: Remove the temporary directory
+# Return to root
 cd ..
-rm -rf "$TEMP_DIR"
-
-echo "Deployment to gh-pages complete!"
+echo "Deployment complete! Give GitHub a few minutes to publish the site."
