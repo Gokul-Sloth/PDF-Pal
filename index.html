@@ -10,9 +10,19 @@
   <link rel="shortcut icon" href="/favicon.ico">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PDF Pal🦥</title>
+  <!-- Security Headers -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' ws: wss:; worker-src blob: 'self'; object-src 'none'; base-uri 'self';">
+  <meta http-equiv="X-Frame-Options" content="DENY">
 </head>
 
 <body>
+  <noscript>
+    <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
+      <h2>JavaScript Required</h2>
+      <p>This privacy-first PDF utility runs entirely on your local device for maximum security.</p>
+      <p>Please enable JavaScript to process files locally. No data is ever sent to a server.</p>
+    </div>
+  </noscript>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>

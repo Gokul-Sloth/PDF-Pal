@@ -3,6 +3,8 @@ import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { PDFDocument } from "pdf-lib";
 import { _GSPS2PDF } from "./lib/worker-init.js";
 import { convertPdfToImages } from "./lib/pdfjs-to-images.js";
+import { isPDF, isFileTooLarge } from "./utils/fileUtils.js";
+import { handleError } from "./utils/errorHandler.js";
 import RightButtonBar from './components/RightButtonBar.jsx';
 import JSZip from 'jszip';
 
@@ -146,9 +148,8 @@ function App() {
       setState("toBeDownloaded");
 
     } catch (error) {
-      console.error("Image to PDF processing failed:", error);
       setState("error");
-      setErrorMessage(error.message || "An unexpected error occurred during image conversion.");
+      setErrorMessage(handleError(error, "Image to PDF processing failed"));
     }
     setTerminalData("");
     setProgressInfo({ current: 0, total: 0, currentPage: 0 });
@@ -199,9 +200,8 @@ function App() {
         setDoneImage(DONE_IMAGES[Math.floor(Math.random() * DONE_IMAGES.length)]);
         setState("toBeDownloaded");
       } catch (error) {
-        console.error("Processing failed:", error);
         setState("error");
-        setErrorMessage(error.message || "An unexpected error occurred during processing");
+        setErrorMessage(handleError(error, "PDF to Image Extract failed"));
       }
       setProgressInfo({ current: 0, total: 0, currentPage: 0 });
       return;
@@ -275,9 +275,8 @@ function App() {
         setDoneImage(DONE_IMAGES[Math.floor(Math.random() * DONE_IMAGES.length)]);
         setState("toBeDownloaded");
       } catch (error) {
-        console.error("Compression failed:", error);
         setState("error");
-        setErrorMessage(error.message || "An unexpected error occurred during compression");
+        setErrorMessage(handleError(error, "Compression failed"));
       }
       setProgressInfo({ current: 0, total: 0, currentPage: 0 });
       return;
@@ -345,9 +344,8 @@ function App() {
       setProgressInfo({ current: 0, total: 0, currentPage: 0 }); // Reset progress when done
 
     } catch (error) {
-      console.error("Processing failed:", error);
       setState("error");
-      setErrorMessage(error.message || "An unexpected error occurred during processing");
+      setErrorMessage(handleError(error, "Operation failed"));
       setTerminalData(""); // Clear terminal output on error
       setProgressInfo({ current: 0, total: 0, currentPage: 0 }); // Reset progress on error
     }
@@ -368,10 +366,35 @@ function App() {
   }
 
   const changeHandler = async (event) => {
-    const selectedFiles = Array.from(event.target.files);
+    let selectedFiles = Array.from(event.target.files);
     if (selectedFiles.length === 0) return;
 
-    const fileObjects = selectedFiles.map(file => ({
+    // Advanced Validation
+    const validFiles = [];
+    for (const file of selectedFiles) {
+      if (isFileTooLarge(file)) {
+        alert(`File ${file.name} is too large (max 200MB limit).`);
+        continue;
+      }
+
+      // If claimed to be a PDF, check magic bytes strictly
+      if (file.type === 'application/pdf') {
+        const validPdf = await isPDF(file);
+        if (!validPdf) {
+          alert(`File ${file.name} appears to be corrupted or not a valid PDF.`);
+          continue;
+        }
+      }
+
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) {
+      if (event.target) event.target.value = null; // reset input
+      return;
+    }
+
+    const fileObjects = validFiles.map(file => ({
       filename: file.name,
       url: window.URL.createObjectURL(file),
       file: file
@@ -403,7 +426,7 @@ function App() {
           const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
           setMaxPages(pdfDoc.getPageCount());
         } catch (err) {
-          console.error("Failed to parse PDF pages:", err);
+          handleError(err, "Failed to parse PDF pages for preview count");
           setMaxPages(0);
         }
       } else {
@@ -1342,7 +1365,16 @@ function App() {
 
         {/* Footer */}
         <footer className="mt-4 border-t border-muted-200 dark:border-gray-800 pt-6 pb-4">
-          <div className="flex justify-end items-center">
+          <div className="flex justify-between items-center">
+            <a
+              href="https://github.com/Gokul-Sloth/PDF-Pal"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-muted-500 dark:text-muted-400 hover:text-gray-900 dark:hover:text-white hover:bg-muted-100 dark:hover:bg-gray-800 transition-all duration-300"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" /></svg>
+              <span className="font-medium text-sm">GitHub</span>
+            </a>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-muted-200 dark:border-gray-700 hover:shadow-md transition-all duration-300 group cursor-default">
               <svg className="w-4 h-4 text-primary-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
               <p className="text-sm font-semibold tracking-wide text-muted-600 dark:text-muted-300">

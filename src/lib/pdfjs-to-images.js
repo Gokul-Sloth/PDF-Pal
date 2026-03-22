@@ -56,6 +56,14 @@ export async function convertPdfToImages(file, format = 'png', progressCallback 
       if (progressCallback) progressCallback(pageNum, numPages);
     }
     
+    // Explicitly destroy the document to free up memory and web worker threads
+    try {
+      if (pdfDocument.cleanup) pdfDocument.cleanup();
+      if (pdfDocument.destroy) await pdfDocument.destroy();
+    } catch (cleanupErr) {
+      console.warn("Non-fatal error during PDF cleanup:", cleanupErr);
+    }
+    
     return images;
   } catch (error) {
     console.error("PDF.js Extraction Error:", error);

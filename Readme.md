@@ -1,81 +1,56 @@
-# Local PDF Tools
+# PDF Pal 🦥
 
-This web app is a PDF processing tool that runs entirely in your browser using Ghostscript WebAssembly. It provides three main features:
-- **Compress**: Reduce PDF file size while maintaining quality
-- **Merge**: Combine multiple PDF files into a single document  
-- **Split**: Extract specific page ranges from a PDF document
+**PDF Pal Lite** is a fast, secure, and privacy-first web application for all your PDF needs. Running directly in your browser, it leverages WebAssembly (Ghostscript) and modern JavaScript libraries to give you powerful document tools without ever sending your files to a server.
 
-## Context
+*Just the four essentials. Zero nonsense. Built for PDFs. Designed for you.*
 
-This project is a demo of another usage of the `gs.wasm` that [@ochachacha](https://github.com/ochachacha) compiled and [ghostscript-pdf-compress.wasm](https://github.com/laurentmmeyer/ghostscript-pdf-compress.wasm). It takes any PDF and compress it via ghostscript.
+## ✨ Features
 
-The applied command is:
+- **🗜️ Compress PDF**: Drastically reduce your file sizes while maintaining reading quality.
+- **🔗 Merge PDFs**: Easily combine multiple documents or images into a single PDF with beautiful drag-and-drop file reordering.
+- **✂️ Split PDF**: Extract specific page ranges out of larger documents in seconds.
+- **🔄 Convert**: 
+  - *PDF to Images*: Extract every page of your document into high-quality PNGs or JPEGs.
+  - *Images to PDF*: Combine multiple scattered images into a unified, standardized PDF document.
+- **🌙 Dark Mode**: Beautiful UI that perfectly respects your system preferences.
 
-```
-gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dDownsampleColorImages=true -dColorImageResolution=150 -dNOPAUSE -dQUIET -dBATCH -sOutputFile=output.pdf input.pdf
-```
+## 🔒 Security & Privacy First
 
-## WebWorker
+We believe your documents are your business.
+- **Zero Uploads**: Everything happens 100% locally on your device. No cloud storage, no servers, no data collection.
+- **Strict File Validation**: Enforces strict 200MB size limits and uses magic-byte validation (`%PDF-`) to prevent corrupted or malicious uploads.
+- **Content Security Policy**: Hardened with strict CSP headers and X-Frame-Options to prevent XSS and clickjacking.
+- **Orphaned Thread Protection**: Web Workers are explicitly garbage-collected and destroyed after every operation to keep your browser running fast.
 
-The compression is now processed in a webworker so that the main thread doesn't become unresponsive and now there is virtually no limit to the size of the PDF that you can compress :tada:  
+## 🚀 Getting Started
 
-## Run the project
-
-To run the project, simply do the following steps
+To run the project locally:
 
 ```bash
-git clone https://github.com/your-username/local-pdf-tools.git
-cd local-pdf-tools
+git clone https://github.com/Gokul-Sloth/PDF-Pal.git
+cd PDF-Pal
 npm install
 npm run dev
 ```
 
-### Build Commands
+### Build for Production
 
 ```bash
-# Development server
-npm run dev
-
-# Production build
 npm run build
-
-# Preview production build
 npm run preview
 ```
 
-## Features
+## 🛠️ Tech Stack
 
-### Compress PDF
-- Multiple quality presets (Screen, eBook, Printer, Prepress, Default)
-- Advanced PDF settings (compatibility level, image downsampling)
-- Custom Ghostscript commands for power users
+- **Frontend**: React 18, Vite, Tailwind CSS
+- **PDF Processing**: 
+  - `pdf-lib` for document properties and generation.
+  - `pdfjs-dist` (PDF.js) for canvas rendering and image extraction.
+  - **Ghostscript WebAssembly** (`pdf-compress.wasm`) for native-grade compression, merging, and splitting directly in the browser.
 
-### Merge PDFs
-- Combine multiple PDF files into one
-- Drag-and-drop interface for file selection
-- Quality settings for output optimization
+## 📄 License
 
-### Split PDF
-- Extract specific page ranges
-- Simple start/end page specification
-- Maintains original quality
-
-### Dark Mode
-- Toggle between light and dark themes
-- Persistent theme preference
-- Respects system preference on first visit
-
-## Privacy & Security
-
-All processing happens locally in your browser. No files are uploaded to any server. Your documents never leave your device.
-
-## Demo
-
-[https://your-username.github.io/local-pdf-tools/](https://your-username.github.io/local-pdf-tools/)
-
-## License
-
-2025. Code licensed under AGPLv3.
+Code licensed under **AGPLv3** (2026).
 
 This project is licensed under the [GNU Affero General Public License v3.0](https://www.gnu.org/licenses/agpl-3.0.html) – see the [LICENSE](LICENSE) file for details.
 
