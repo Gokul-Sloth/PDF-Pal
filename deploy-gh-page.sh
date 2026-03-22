@@ -2,23 +2,25 @@
 # Exit on error
 set -e
 
-# Build the project with Vite
-echo "Building the project..."
+echo "Cleaning previous build..."
+rm -rf dist
+
+echo "Building project..."
 npm run build
 
-# Navigate into the build output directory
+echo "Deploying to gh-pages..."
 cd dist
-
-# Initialize a new git repository for the built files
-echo "Initializing deployment repository..."
 git init
+git config user.email "deploy@pdf-pal"
+git config user.name "Deploy Bot"
 git add -A
 git commit -m "Deploy to gh-pages"
-
-# Push to the gh-pages branch
-echo "Pushing built files to GitHub Pages..."
-git push -f https://github.com/Gokul-Sloth/PDF-Pal.git master:gh-pages
-
-# Return to root
+git push -f https://github.com/Gokul-Sloth/PDF-Pal.git HEAD:gh-pages
 cd ..
-echo "Deployment complete! Give GitHub a few minutes to publish the site."
+
+echo ""
+echo "Deployment complete!"
+echo "Site will be live at: https://gokul-sloth.github.io/PDF-Pal/"
+echo ""
+echo "IMPORTANT: Make sure GitHub Pages is set to deploy from the 'gh-pages' branch."
+echo "Go to: https://github.com/Gokul-Sloth/PDF-Pal/settings/pages"
