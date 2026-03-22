@@ -1,28 +1,27 @@
 # PDF Pal 🦥
 
-**PDF Pal Lite** is a fast, secure, and privacy-first web application for all your PDF needs. Running directly in your browser, it leverages WebAssembly (Ghostscript) and modern JavaScript libraries to give you powerful document tools without ever sending your files to a server.
+**PDF Pal** is a fast, secure, and privacy-first web application for all your PDF needs. Running directly in your browser, it leverages WebAssembly (Ghostscript) and modern JavaScript libraries to give you powerful document tools without ever sending your files to a server.
 
 *Just the four essentials. Zero nonsense. Built for PDFs. Designed for you.*
 
-## ✨ Features
+## Features
 
-- **🗜️ Compress PDF**: Drastically reduce your file sizes while maintaining reading quality.
-- **🔗 Merge PDFs**: Easily combine multiple documents or images into a single PDF with beautiful drag-and-drop file reordering.
-- **✂️ Split PDF**: Extract specific page ranges out of larger documents in seconds.
-- **🔄 Convert**: 
+- ** Compress PDF**: Drastically reduce your file sizes while maintaining reading quality.
+- ** Merge PDFs**: Easily combine multiple documents or images into a single PDF with beautiful drag-and-drop file reordering.
+- ** Split PDF**: Extract specific page ranges out of larger documents in seconds.
+- ** Convert**: 
   - *PDF to Images*: Extract every page of your document into high-quality PNGs or JPEGs.
   - *Images to PDF*: Combine multiple scattered images into a unified, standardized PDF document.
-- **🌙 Dark Mode**: Beautiful UI that perfectly respects your system preferences.
+- ** Dark Mode**: Beautiful UI that perfectly respects your system preferences.
 
-## 🔒 Security & Privacy First
+##  Security & Privacy First
 
 We believe your documents are your business.
 - **Zero Uploads**: Everything happens 100% locally on your device. No cloud storage, no servers, no data collection.
 - **Strict File Validation**: Enforces strict 200MB size limits and uses magic-byte validation (`%PDF-`) to prevent corrupted or malicious uploads.
-- **Content Security Policy**: Hardened with strict CSP headers and X-Frame-Options to prevent XSS and clickjacking.
 - **Orphaned Thread Protection**: Web Workers are explicitly garbage-collected and destroyed after every operation to keep your browser running fast.
 
-## 🚀 Getting Started
+## Getting Started
 
 To run the project locally:
 
@@ -40,7 +39,7 @@ npm run build
 npm run preview
 ```
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 - **Frontend**: React 18, Vite, Tailwind CSS
 - **PDF Processing**: 
@@ -48,7 +47,7 @@ npm run preview
   - `pdfjs-dist` (PDF.js) for canvas rendering and image extraction.
   - **Ghostscript WebAssembly** (`pdf-compress.wasm`) for native-grade compression, merging, and splitting directly in the browser.
 
-## 📄 License
+##  License
 
 Code licensed under **AGPLv3** (2026).
 
