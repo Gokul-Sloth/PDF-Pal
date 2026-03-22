@@ -5,6 +5,6 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   build: { target: "esnext", outDir: 'dist' },
-  base: "/PDF-Pal/",
+  base: "/",
   worker: { format: 'es' },
 });
