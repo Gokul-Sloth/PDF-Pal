@@ -1,0 +1,10 @@
+services:
+  pdf-pal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gokulkrish29/pdf-pal:latest
+    container_name: pdf-pal
+    ports:
+      - "5173:80"
+    restart: unless-stopped
