@@ -635,6 +635,8 @@ function App() {
     );
   };
 
+  const isRearrangeable = activeTab === 'merge' || (activeTab === 'convert' && convertType === 'imgToPdf');
+
   return (
     <div className="min-h-screen bg-fixed transition-colors duration-300 bg-gradient-to-br from-gray-50 via-gray-200 to-gray-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
       {/* Responsive Navbar Header */}
@@ -890,15 +892,15 @@ function App() {
                 {files.map((file, index) => (
                   <div
                     key={file.url}
-                    draggable={activeTab === 'merge'}
-                    onDragStart={(e) => activeTab === 'merge' && handleDragStart(e, index)}
-                    onDragEnter={(e) => activeTab === 'merge' && handleDragEnter(e, index)}
-                    onDragEnd={activeTab === 'merge' ? handleDragEnd : undefined}
+                    draggable={isRearrangeable}
+                    onDragStart={(e) => isRearrangeable && handleDragStart(e, index)}
+                    onDragEnter={(e) => isRearrangeable && handleDragEnter(e, index)}
+                    onDragEnd={isRearrangeable ? handleDragEnd : undefined}
                     onDragOver={(e) => e.preventDefault()}
-                    className={`flex items-center justify-between p-4 bg-muted-50 dark:bg-gray-700 border border-muted-200 dark:border-gray-600 rounded-xl ${activeTab === 'merge' ? 'cursor-grab active:cursor-grabbing hover:border-primary-400 dark:hover:border-primary-500 hover:shadow-md transition-all' : ''}`}
+                    className={`flex items-center justify-between p-4 bg-muted-50 dark:bg-gray-700 border border-muted-200 dark:border-gray-600 rounded-xl ${isRearrangeable ? 'cursor-grab active:cursor-grabbing hover:border-primary-400 dark:hover:border-primary-500 hover:shadow-md transition-all' : ''}`}
                   >
                     <div className="flex-1 min-w-0 flex items-center gap-3">
-                      {activeTab === 'merge' && (
+                      {isRearrangeable && (
                         <div className="text-muted-400 shrink-0">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" /></svg>
                         </div>
@@ -907,7 +909,7 @@ function App() {
                         {file.filename}
                       </p>
                     </div>
-                    {activeTab === 'merge' && files.length > 1 && (
+                    {isRearrangeable && files.length > 1 && (
                       <div className="flex flex-col items-center gap-1 ml-3 px-2 border-l border-muted-200 dark:border-gray-600">
                         <button
                           type="button"
