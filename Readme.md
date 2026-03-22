@@ -8,6 +8,7 @@
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/gokulkrish29/pdf-pal)
 
 *Just the four essentials. Zero nonsense. Built for PDFs. Designed for you.*
 
@@ -70,6 +71,41 @@ npm run build
 npm run preview
 ```
 
+---
+
+## 🐳 Docker
+
+Run PDF Pal in a container — no Node.js required on the host.
+
+### Quick Start
+
+```bash
+# Pull and run from Docker Hub
+docker pull gokulkrish29/pdf-pal:latest
+docker run -d -p 5173:80 --name pdf-pal gokulkrish29/pdf-pal:latest
+```
+
+Open **http://localhost:5173** in your browser.
+
+### Build from Source
+
+```bash
+# Build the image
+docker build -t pdf-pal .
+
+# Run the container
+docker run -d -p 5173:80 --name pdf-pal pdf-pal
+```
+
+### Docker Compose
+
+```bash
+# Start
+docker compose up -d
+
+# Stop
+docker compose down
+```
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
@@ -77,24 +113,44 @@ npm run preview
 | **Frontend** | React 18, Vite, Tailwind CSS |
 | **PDF Manipulation** | `pdf-lib` — document properties & generation |
 | **Rendering** | `pdfjs-dist` (PDF.js) — canvas rendering & image extraction |
-| **Compression / Merge / Split** | Ghostscript WebAssembly (`pdf-compress.wasm`) — native-grade processing in the browser |
+| **Compression / Merge / Split** | Ghostscript WebAssembly (`gs-worker.wasm`) — native-grade processing in the browser |
+| **Production Serving** | Nginx (Alpine) via Docker |
 
 ## Project Structure
 
 ```
 PDF-Pal/
-├── public/
-│   └── pdf-compress.wasm     # Ghostscript WebAssembly binary
+├── public/                   # Static assets (favicons, manifest)
 ├── src/
 │   ├── components/           # Reusable UI components
-│   ├── features/             # Core PDF tool logic (compress, merge, split, convert)
-│   ├── workers/              # Web Worker definitions
+│   ├── lib/
+│   │   ├── background-worker.js
+│   │   ├── gs-worker.js      # Ghostscript Emscripten module
+│   │   ├── gs-worker.wasm    # Ghostscript WebAssembly binary
+│   │   ├── pdfjs-to-images.js
+│   │   └── worker-init.js
+│   ├── utils/                # Utility functions
+│   ├── App.jsx
+│   ├── index.css
 │   └── main.jsx
+├── Dockerfile                # Multi-stage build (Node → Nginx)
+├── docker-compose.yml        # Production compose config
+├── nginx.conf                # Nginx config (SPA, WASM, caching)
+├── .dockerignore
 ├── index.html
-└── vite.config.js
+├── vite.config.js
+├── tailwind.config.js
+└── package.json
 ```
 
-> **Note:** Update this tree to match your actual project layout.
+## Deployment Notes
+
+The `base` path in `vite.config.js` is configurable via the `VITE_BASE_PATH` environment variable:
+
+| Target | Base Path | How |
+|---|---|---|
+| **Docker** (default) | `/` | No env var needed |
+| **GitHub Pages** | `/PDF-Pal/` | `VITE_BASE_PATH=/PDF-Pal/ npm run build` |
 
 ## Contributing
 
@@ -113,3 +169,4 @@ Code licensed under **AGPLv3** (2026).
 This project is licensed under the [GNU Affero General Public License v3.0](https://www.gnu.org/licenses/agpl-3.0.html) — see the [LICENSE](LICENSE) file for details.
 
 Ghostscript is released by Artifex under AGPLv3. Learn more at [ghostscript.com](https://www.ghostscript.com/).
+
