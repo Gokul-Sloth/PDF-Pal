@@ -14,6 +14,8 @@ const PDF_SETTINGS = {
   '/prepress': 'High'
 };
 
+const DONE_IMAGES = ["/Done.webp", "/Done3.webp", "/done2.webp"];
+
 function loadPDFData(response, filename) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -41,6 +43,7 @@ function loadPDFData(response, filename) {
 function App() {
   const [animationParent] = useAutoAnimate();
   const [isDragOver, setIsDragOver] = useState(false);
+  const [doneImage, setDoneImage] = useState(DONE_IMAGES[0]);
   const [activeTab, setActiveTab] = useState("compress");
   const [convertType, setConvertType] = useState("pdfToImg"); // 'pdfToImg' or 'imgToPdf'
   const [convertFormat, setConvertFormat] = useState("png"); // 'png' or 'jpeg'
@@ -139,6 +142,7 @@ function App() {
         filename: `converted-${Date.now()}.pdf`,
         operation: 'convert'
       }]);
+      setDoneImage(DONE_IMAGES[Math.floor(Math.random() * DONE_IMAGES.length)]);
       setState("toBeDownloaded");
 
     } catch (error) {
@@ -192,6 +196,7 @@ function App() {
           }]);
         }
 
+        setDoneImage(DONE_IMAGES[Math.floor(Math.random() * DONE_IMAGES.length)]);
         setState("toBeDownloaded");
       } catch (error) {
         console.error("Processing failed:", error);
@@ -267,6 +272,7 @@ function App() {
             operation: 'compress'
           }]);
         }
+        setDoneImage(DONE_IMAGES[Math.floor(Math.random() * DONE_IMAGES.length)]);
         setState("toBeDownloaded");
       } catch (error) {
         console.error("Compression failed:", error);
@@ -333,6 +339,7 @@ function App() {
         filename: getOutputFilename(filename, operation),
         operation
       }]);
+      setDoneImage(DONE_IMAGES[Math.floor(Math.random() * DONE_IMAGES.length)]);
       setState("toBeDownloaded");
       setTerminalData(""); // Clear terminal output when done
       setProgressInfo({ current: 0, total: 0, currentPage: 0 }); // Reset progress when done
@@ -749,8 +756,8 @@ function App() {
               }}
               onDragOver={(e) => e.preventDefault()}
             >
-              <div className="text-center animate-bounce">
-                <svg className="w-12 h-12 mx-auto mb-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+              <div className="text-center">
+                <svg className="w-8 h-8 mx-auto mb-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
                 <span className="text-2xl font-medium text-gray-500 dark:text-white pb-2 block">Drop your files here</span>
               </div>
             </div>
@@ -1099,16 +1106,22 @@ function App() {
 
         {state === "toBeDownloaded" && (
           <div className="card text-center py-12 px-4 shadow-xl border border-green-100 dark:border-green-900/30 bg-gradient-to-b from-white to-green-50/50 dark:from-gray-800 dark:to-gray-800/80 animate-fade-up">
-            <img
-              src="/Done.webp"
-              alt="Done"
-              className="mx-auto w-32 h-32 sm:w-40 sm:h-40 object-contain mb-2 drop-shadow-xl"
-            />
+            {activeTab === 'convert' && convertType === 'pdfToImg' ? (
+              <div className="mx-auto flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-green-100 dark:bg-green-900/40 mb-6 border border-green-200 dark:border-green-800 drop-shadow-md">
+                <svg className="w-12 h-12 sm:w-16 sm:h-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3.5" d="M5 13l4 4L19 7" /></svg>
+              </div>
+            ) : (
+              <img
+                src={doneImage}
+                alt="Done"
+                className="mx-auto w-32 h-32 sm:w-40 sm:h-40 object-contain mb-2 drop-shadow-xl"
+              />
+            )}
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Done! Your PDF is ready
+              Done! Your {activeTab === 'convert' && convertType === 'pdfToImg' ? 'Images are' : 'PDF is'} ready
             </h3>
             <p className="text-muted-600 dark:text-muted-300 mb-8 max-w-md mx-auto">
-              Click the button below to download it.
+              Click the button below to download {activeTab === 'convert' && convertType === 'pdfToImg' ? 'them' : 'it'}.
             </p>
 
             <div className="flex flex-col items-center justify-center mb-10 space-y-4">
