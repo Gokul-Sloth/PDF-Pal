@@ -651,7 +651,7 @@ function App() {
             </div>
             <div className="flex flex-col justify-center leading-tight">
               <h1 className="text-2xl md:text-[28px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 tracking-tight pb-0.5">
-                PDF Pal Lite
+                PDF Pal
               </h1>
               <p className="text-xs md:text-[13px] font-semibold text-muted-500 dark:text-muted-400 tracking-wide uppercase mt-0.5">
                 <span className="hover:text-muted-700 dark:hover:text-muted-200 hover:underline cursor-pointer transition-colors">Gokul.it.com</span>
