@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { PDFDocument } from "pdf-lib";
 import { _GSPS2PDF } from "./lib/worker-init.js";
 import { convertPdfToImages } from "./lib/pdfjs-to-images.js";
@@ -38,6 +39,8 @@ function loadPDFData(response, filename) {
 }
 
 function App() {
+  const [animationParent] = useAutoAnimate();
+  const [isDragOver, setIsDragOver] = useState(false);
   const [activeTab, setActiveTab] = useState("compress");
   const [convertType, setConvertType] = useState("pdfToImg"); // 'pdfToImg' or 'imgToPdf'
   const [convertFormat, setConvertFormat] = useState("png"); // 'png' or 'jpeg'
@@ -441,7 +444,7 @@ function App() {
         return newFiles;
       });
     }
-    
+
     // Reset refs safely after queueing the update
     dragItem.current = null;
     dragOverItem.current = null;
@@ -618,7 +621,7 @@ function App() {
             </div>
             <div className="flex flex-col justify-center leading-tight">
               <h1 className="text-2xl md:text-[28px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 tracking-tight pb-0.5">
-                PDF Tool Lite
+                PDF Pal Lite
               </h1>
               <p className="text-xs md:text-[13px] font-semibold text-muted-500 dark:text-muted-400 tracking-wide uppercase mt-0.5">
                 <span className="hover:text-muted-700 dark:hover:text-muted-200 hover:underline cursor-pointer transition-colors">Gokul.it.com</span>
@@ -634,10 +637,12 @@ function App() {
       </header>
       <div className="container mx-auto max-w-4xl px-4 py-8">
         {/* Info below navbar */}
-        <div className="text-center mb-12">
-          <p className="text-lg text-muted-600 dark:text-muted-300 max-w-2xl mx-auto">
-            Compress, Merge, Split and Convert PDF files locally in your browser. <br />
-            Everything stays on your device.
+        <div className="text-center mb-12 space-y-3">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-500 dark:text-white max-w-2xl mx-auto tracking-tight">
+            The four essentials. Zero nonsense.
+          </h2>
+          <p className="text-sm md:text-base text-muted-500 dark:text-muted-400 max-w-2xl mx-auto">
+            Built for PDFs. Designed for you.
           </p>
         </div>
 
@@ -704,7 +709,52 @@ function App() {
         </div>
 
         {/* Tab Content */}
-        <div className="card mb-8">
+        <div
+          className={`card mb-8 relative transition-all duration-300 ${isDragOver ? 'ring-4 ring-primary-500 scale-[1.02] shadow-2xl' : ''}`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            if (e.dataTransfer.types && e.dataTransfer.types.includes('Files')) {
+              setIsDragOver(true);
+            }
+          }}
+        >
+          {isDragOver && (
+            <div
+              className="absolute inset-0 z-50 flex items-center justify-center bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-[32px] border-4 border-dashed border-primary-500"
+              onDragLeave={(e) => { e.preventDefault(); setIsDragOver(false); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragOver(false);
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                  let droppedFiles = Array.from(e.dataTransfer.files);
+
+                  if (activeTab === 'compress' || activeTab === 'merge' || activeTab === 'split' || (activeTab === 'convert' && convertType === 'pdfToImg')) {
+                    const validFiles = droppedFiles.filter(file => file.type === 'application/pdf');
+                    if (validFiles.length !== droppedFiles.length) {
+                      alert('Only PDF files are accepted for this operation.');
+                    }
+                    droppedFiles = validFiles;
+                  } else if (activeTab === 'convert' && convertType === 'imgToPdf') {
+                    const validFiles = droppedFiles.filter(file => file.type.startsWith('image/'));
+                    if (validFiles.length !== droppedFiles.length) {
+                      alert('Only image files are accepted for this operation.');
+                    }
+                    droppedFiles = validFiles;
+                  }
+
+                  if (droppedFiles.length > 0) {
+                    changeHandler({ target: { files: droppedFiles } });
+                  }
+                }
+              }}
+              onDragOver={(e) => e.preventDefault()}
+            >
+              <div className="text-center animate-bounce">
+                <svg className="w-12 h-12 mx-auto mb-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                <span className="text-2xl font-medium text-gray-500 dark:text-white pb-2 block">Drop your files here</span>
+              </div>
+            </div>
+          )}
           {activeTab === 'compress' && (
             <div className="text-center">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Compress PDF</h3>
@@ -806,10 +856,10 @@ function App() {
                 </button>
               </div>
 
-              <div className="space-y-3">
+              <div ref={animationParent} className="space-y-3">
                 {files.map((file, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={file.url}
                     draggable={activeTab === 'merge'}
                     onDragStart={(e) => activeTab === 'merge' && handleDragStart(e, index)}
                     onDragEnter={(e) => activeTab === 'merge' && handleDragEnter(e, index)}
@@ -1264,19 +1314,28 @@ function App() {
           )}
 
           <div className="border-t border-muted-200 dark:border-gray-700 pt-6">
-            <p className="text-muted-600 dark:text-muted-300 mb-0">
-              <strong className="text-gray-900 dark:text-white">Privacy & Security:</strong><br />
-              All processing happens locally in your browser. No files are uploaded to any server.
-            </p>
+            <div className="text-muted-600 dark:text-muted-300 mb-0">
+              <strong className="text-gray-900 dark:text-white inline-block mb-3">Privacy & Security:</strong>
+              <ul className="list-disc list-outside ml-5 space-y-1.5 marker:text-muted-400 dark:marker:text-gray-500">
+                <li>All processing is done locally in your browser using PDF.js, pdf-lib, and Ghostscript.</li>
+                <li>Nothing ever leaves your device - No uploads, No servers, No logs, No file names collected.</li>
+                <li>Fully open-source libraries.</li>
+                <li>No account required. No login. No email.</li>
+                <li>Your PDFs stay yours. Always.</li>
+              </ul>
+            </div>
           </div>
         </div>
 
         {/* Footer */}
-        <footer className="border-t border-muted-200 dark:border-gray-700 pt-6">
-          <div className="flex justify-between items-center">
-            <p className="text-muted-600 dark:text-muted-300">
-              &copy; {new Date().getFullYear()} Code licensed under AGPLv3.
-            </p>
+        <footer className="mt-4 border-t border-muted-200 dark:border-gray-800 pt-6 pb-4">
+          <div className="flex justify-end items-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-muted-200 dark:border-gray-700 hover:shadow-md transition-all duration-300 group cursor-default">
+              <svg className="w-4 h-4 text-primary-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+              <p className="text-sm font-semibold tracking-wide text-muted-600 dark:text-muted-300">
+                &copy; {new Date().getFullYear()} Licensed under AGPLv3
+              </p>
+            </div>
           </div>
         </footer>
       </div>
