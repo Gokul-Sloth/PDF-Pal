@@ -30,15 +30,15 @@
 
 ## Features
 
-- 🗜️ **Compress PDF** — Drastically reduce file sizes while maintaining reading quality. Upload and compress multiple PDFs in one go.
-- 🔗 **Merge PDFs** — Combine multiple documents into a single PDF with drag-and-drop reordering to arrange pages exactly how you want.
-- ✂️ **Split PDF** — Extract specific page ranges from larger documents in seconds.
-- 🔄 **Convert**
+-  **Compress PDF** — Drastically reduce file sizes while maintaining reading quality. Upload and compress multiple PDFs in one go.
+-  **Merge PDFs** — Combine multiple documents into a single PDF with drag-and-drop reordering to arrange pages exactly how you want.
+-  **Split PDF** — Extract specific page ranges from larger documents in seconds.
+-  **Convert**
   - *PDF → Images*: Extract every page into high-quality PNGs or JPEGs.
   - *Images → PDF*: Combine multiple images into a unified, standardized PDF with drag-and-drop reordering before conversion.
-- 🌙 **Dark Mode** — Respects your system preferences automatically.
+-  **Dark Mode** — Respects your system preferences automatically.
 
-## 🔒 Security & Privacy First
+##  Security & Privacy First
 
 Your documents are your business.
 
@@ -73,14 +73,14 @@ npm run preview
 
 ---
 
-## 🐳 Docker
+##  Docker
 
-Run PDF Pal in a container — no Node.js required on the host.
+Run PDF Pal in a container — no Node.js required on the host. The Docker image supports **multi-architecture** (`linux/amd64` and `linux/arm64`) out of the box, meaning it runs natively on standard x86 servers, Apple Silicon (M1/M2/M3), and AWS Graviton without any changes!
 
 ### Quick Start
 
 ```bash
-# Pull and run from Docker Hub
+# Pull and run from Docker Hub (automatically fetches your system's architecture)
 docker pull gokulkrish29/pdf-pal:latest
 docker run -d -p 5173:80 --name pdf-pal gokulkrish29/pdf-pal:latest
 ```
@@ -89,12 +89,21 @@ Open **http://localhost:5173** in your browser.
 
 ### Build from Source
 
+If you want to build the single-architecture image for your local environment:
 ```bash
 # Build the image
 docker build -t pdf-pal .
 
 # Run the container
 docker run -d -p 5173:80 --name pdf-pal pdf-pal
+```
+
+### Multi-Architecture Build (ARM64 & x86_64)
+
+To build and push a multi-architecture image (like the one hosted on Docker Hub) for multiple platforms simultaneously, use `docker buildx`:
+
+```bash
+docker buildx build --platform linux/amd64,linux/arm64 -t your-username/pdf-pal:latest --push .
 ```
 
 ### Docker Compose
@@ -106,7 +115,7 @@ docker compose up -d
 # Stop
 docker compose down
 ```
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -162,7 +171,7 @@ Contributions, issues, and feature requests are welcome!
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+##  License
 
 Code licensed under **AGPLv3** (2026).
 

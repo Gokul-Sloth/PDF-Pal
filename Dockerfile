@@ -32,10 +32,10 @@ RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built assets from build stage
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copy the WASM binary to serve at root (fallback for self-contained operation)
-COPY --from=build /app/src/lib/gs-worker.wasm /usr/share/nginx/html/gs-worker.wasm
+COPY --from=builder /app/src/lib/gs-worker.wasm /usr/share/nginx/html/gs-worker.wasm
 
 EXPOSE 80
 
